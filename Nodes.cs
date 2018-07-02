@@ -26,7 +26,7 @@ namespace Графы1
                 DrawExist = false;
             }
         }
-
+        public bool Checked = true;
         public List<Edge> Edges;
         public int Value { get; set; }
         public bool Visited = false;
@@ -39,6 +39,7 @@ namespace Графы1
         public int Distance;
         public int[] Distances;
         public int _dist = 0;
+        public bool CanTurn = true;
 
         public Node(int X, int Y, int Value)
         {
@@ -102,8 +103,8 @@ namespace Графы1
         {
             if (!ExistEdge(n1, n2))
             {
-                int dx = Nodes[n2].X - Nodes[n1].X;
-                int dy = Nodes[n2].Y - Nodes[n1].Y;
+                int dx = Math.Abs(Nodes[n2].X - Nodes[n1].X);
+                int dy = Math.Abs(Nodes[n2].Y - Nodes[n1].Y);
                 double x = dx * dx + dy * dy;
                 x = Math.Pow(x, 0.5);
                 int dist = Convert.ToInt32(x);
@@ -207,18 +208,18 @@ namespace Графы1
             return -1;
         }
 
-        public void DeleteNode(int n)
+        public void DeleteNode(int n, List<Node> Nodes)
         {
             int L = Nodes[n].Edges.Count;
             for (int i = 1; i < L + 1; i++)
             {
-                DeleteEdge(n, Nodes[n].Edges[0].Num);
+                DeleteEdge(n, Nodes[n].Edges[0].Num, Nodes);
             }
             ChandgeNumber(n);
             Nodes.Remove(Nodes[n]);
         }
 
-        public void DeleteEdge(int n1, int n2)
+        public void DeleteEdge(int n1, int n2, List<Node> Nodes)
         {
             if (ExistEdge(n1, n2))
             {
@@ -367,6 +368,15 @@ namespace Графы1
             return true;
         }
 
+        private bool VisitAllTrue()
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (!Nodes[i].Visited) return false;
+            }
+            return true;
+        }
+
         public void CheckGears(int n, int way)
         {
             for (int i = 0; i < Nodes.Count; i++)
@@ -383,30 +393,52 @@ namespace Графы1
         private void CheckGear(int n)
         {
             Nodes[n].Visited = true;
-            for (int i = 0; i < Nodes[n].Edges.Count; i++)
+            if (Nodes[n].Checked)
             {
-                int m = Nodes[n].Edges[i].Num;
-                if (Nodes[m].Visited) continue;
-                for (int j = 0; j < Nodes[n].Edges.Count; j++)
+                for (int i = 0; i < Nodes[n].Edges.Count; i++)
                 {
-                    int t = Nodes[n].Edges[j].Num;
-                    if (Nodes[t].TurnRate == -1)
+                    int m = Nodes[n].Edges[i].Num;
+                    if (Nodes[m].Visited) continue;
+                    for (int j = 0; j < Nodes[n].Edges.Count; j++)
                     {
-                        if (Nodes[n].TurnRate == 0)
-                            Nodes[t].TurnRate = 1;
-                        else Nodes[t].TurnRate = 0;
-                        NumberGearsToTurn++;
+                        int t = Nodes[n].Edges[j].Num;
+                        if (Nodes[t].TurnRate == -1)
+                        {
+                            if (Nodes[n].TurnRate == 0)
+                                Nodes[t].TurnRate = 1;
+                            else Nodes[t].TurnRate = 0;
+                            NumberGearsToTurn++;
+                        }
+                        else
+                        if (Nodes[t].TurnRate == Nodes[n].TurnRate)
+                        {
+                            Turn = false;
+                            Nodes[n].CanTurn = false;
+                            return;
+                        }
+                        if (!Turn) return;
                     }
-                    else
-                    if (Nodes[t].TurnRate == Nodes[n].TurnRate || !Turn)
-                    {
-                        Turn = false;
-                        return;
-                    }
+                    if (VisitAllTrue()) return;
+                    CheckGear(m);
                 }
-                if (CheckAllTrue()) return;
-                CheckGear(m);
-            }            
+            }
+        }
+
+        private void DeleteGears()
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (!Nodes[i].CanTurn) Nodes[i].Checked = false;
+            }
+        }
+
+        public void IfFalseGears(int n, int way)
+        {
+            while (!Turn)
+            {
+                DeleteGears();
+                CheckGears(n, way);
+            }
         }
     }
 }

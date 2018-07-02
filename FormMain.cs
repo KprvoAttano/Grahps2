@@ -135,7 +135,7 @@ namespace Графы1
             if (n != -1)
             {
                 n = graph.CheckName(n) - 1;
-                graph.DeleteNode(n);
+                graph.DeleteNode(n, graph.Nodes);
             }
             Graphics gr = CreateGraphics();
             gr.Clear(DefaultBackColor);
@@ -155,7 +155,7 @@ namespace Графы1
             {
                 n = graph.CheckName(n) - 1;
                 n1 = graph.CheckName(n1) - 1;
-                graph.DeleteEdge(n, n1);
+                graph.DeleteEdge(n, n1, graph.Nodes);
             }
             Graphics gr = CreateGraphics();
             gr.Clear(DefaultBackColor);
@@ -187,7 +187,13 @@ namespace Графы1
                     tBResult.Text = graph.NumberGearsToTurn.ToString();
                 }
                 else
-                    tBResult.Text = graph.Turn.ToString();
+                {
+                    graph.IfFalseGears(n, t);
+                    for (int i = 0; i < graph.Nodes.Count; i++)
+                    {
+                        if (!graph.Nodes[i].CanTurn) tBResult.Text += i + " ";
+                    }
+                }
             }
             GraphToForm.DrawGraph(gr, graph);
         }
