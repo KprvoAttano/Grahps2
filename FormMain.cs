@@ -188,10 +188,10 @@ namespace Графы1
                 }
                 else
                 {
-                    graph.IfFalseGears(n, t);
+                    graph.DeleteGears(n, t);
                     for (int i = 0; i < graph.Nodes.Count; i++)
                     {
-                        if (!graph.Nodes[i].CanTurn) tBResult.Text += i + " ";
+                        if (graph.Nodes[i].NeedToDelete) tBResult.Text += (i + 1) + " ";
                     }
                 }
             }

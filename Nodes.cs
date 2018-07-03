@@ -40,6 +40,7 @@ namespace Графы1
         public int[] Distances;
         public int _dist = 0;
         public bool CanTurn = true;
+        public bool NeedToDelete = false;
 
         public Node(int X, int Y, int Value)
         {
@@ -131,6 +132,14 @@ namespace Графы1
             for (int i = 0; i < Nodes.Count; i++)
             {
                 Nodes[i].Visited = false;
+            }
+        }
+
+        private void ClearDelete()
+        {
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                Nodes[i].NeedToDelete = false;
             }
         }
 
@@ -424,20 +433,50 @@ namespace Графы1
             }
         }
 
-        private void DeleteGears()
+        private int CountUnChecked()
+        {
+            int _count = 0;
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                if (!Nodes[i].Checked) _count++;
+            }
+            return _count;
+        }
+
+        public int DeleteGears(int n, int way)
+        {
+            int _count = 0;
+            IfFalseGear(n, way, ref _count);
+            return _count;
+        }
+
+        private void IfFalseGear(int n, int way, ref int _count)
         {
             for (int i = 0; i < Nodes.Count; i++)
             {
-                if (!Nodes[i].CanTurn) Nodes[i].Checked = false;
-            }
-        }
-
-        public void IfFalseGears(int n, int way)
-        {
-            while (!Turn)
-            {
-                DeleteGears();
-                CheckGears(n, way);
+                if (!Nodes[i].CanTurn)
+                {
+                    Nodes[i].Checked = false;
+                    Nodes[i].CanTurn = true;
+                    CheckGears(n, way);
+                    if (Turn)
+                    {
+                        Turn = false;
+                        if (_count < CountUnChecked())
+                        {
+                            ClearDelete();
+                            _count = CountUnChecked();
+                            Nodes[i].NeedToDelete = true;
+                        }
+                    }
+                    else
+                    {
+                        IfFalseGear(n, way, ref _count);
+                        Nodes[i].NeedToDelete = true;
+                    }
+                    Nodes[i].CanTurn = false;
+                    Nodes[i].Checked = true;
+                }
             }
         }
     }
